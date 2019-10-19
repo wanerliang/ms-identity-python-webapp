@@ -51,7 +51,7 @@ def logout():
 
 @app.route("/profile")
 def profile():  # Only used in B2C scenario
-    app = _build_msal_app(authority=app_config.B2C_PROFILE_AUTHORITY)
+    app = _build_msal_app(policy=app_config.B2C_PROFILE_EDIT)
     return redirect(app.get_authorization_request_url([],
         state=str(uuid.uuid4()),
         redirect_uri=url_for("authorized", _external=True)))
@@ -78,10 +78,11 @@ def _save_cache(cache):
     if cache.has_state_changed:
         session["token_cache"] = cache.serialize()
 
-def _build_msal_app(cache=None, authority=None):
+def _build_msal_app(cache=None, policy=None):
     return msal.ConfidentialClientApplication(
-        app_config.CLIENT_ID, authority=authority or app_config.AUTHORITY,
-        client_credential=app_config.CLIENT_SECRET, token_cache=cache)
+        app_config.CLIENT_ID, authority=app_config.AUTHORITY,
+        client_credential=app_config.CLIENT_SECRET, token_cache=cache,
+        trusted_policy_framework=policy or app_config.POLICY)
 
 def _get_token_from_cache(scope=None):
     cache = _load_cache()  # This web app maintains one cache per session
