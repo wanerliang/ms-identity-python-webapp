@@ -45,6 +45,11 @@ def authorized():
 @app.route("/logout")
 def logout():
     session.clear()  # Wipe out user and its token cache from session
+    if app_config.POLICY:
+        return redirect(  # Also logout from your tenant's web session
+            app_config.AUTHORITY + '/' + app_config.POLICY + "/oauth2/v2.0/logout" +
+            "?post_logout_redirect_uri=" + url_for(
+                "index", _external=True))
     return redirect(  # Also logout from your tenant's web session
         app_config.AUTHORITY + "/oauth2/v2.0/logout" +
         "?post_logout_redirect_uri=" + url_for("index", _external=True))
