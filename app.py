@@ -17,6 +17,35 @@ Session(app)
 from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
+@app.route("/device/")
+@app.route("/device/<abort>")
+def device(abort=False):  # step 1 of 3
+    default = [
+        ("authority", "https://login.microsoftonline.com/common"),
+        ("client_id", ""),
+        ("scope", "User.Read"),
+        ]
+    if all(request.args.get(k) for k, v in default):
+        pca = msal.PublicClientApplication(
+            request.args["client_id"], authority=request.args["authority"])
+        session["args"] = request.args
+        session["flow"] = pca.initiate_device_flow([request.args["scope"]])
+        return redirect(url_for("device2"))
+    return render_template("device.html", default=default)
+
+@app.route("/device2")
+def device2():  # step 2 of 3
+    return render_template("device2.html", flow=session.get("flow"))
+
+@app.route("/device3")
+def device3():  # step 3 of 3
+    result = None
+    if session.get("args") and session.get("flow", {}).get("message"):
+        pca = msal.PublicClientApplication(
+            session["args"]["client_id"], authority=session["args"]["authority"])
+        result = pca.acquire_token_by_device_flow(session["flow"])
+    return render_template("device3.html", result=result)
+
 @app.route("/")
 def index():
     if not session.get("user"):

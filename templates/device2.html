@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+  <h1>Device Flow Test App</h1>
+  <h2>Sign In from a different device, and then continue</h2>
+
+  {{ flow.get("message", flow) }}
+  <br/>
+  <ul><li><a href="/device">Go Back</a></li></ul>
+
+  {% if flow.get("message") %}
+  <ul><li><a href="/device3">Proceed AFTER you complete the Device Flow</a></li></ul>
+  {% endif %}
+
+<hr>
+  <footer style="text-align: right">Powered by MSAL Python {{ version }}</footer>
+</body>
+</html>
+
